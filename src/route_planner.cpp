@@ -10,7 +10,8 @@ RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, floa
 
     // TODO 2: Use the m_Model.FindClosestNode method to find the closest nodes to the starting and ending coordinates.
     // Store the nodes you find in the RoutePlanner's start_node and end_node attributes.
-
+    start_node = &m_Model.FindClosestNode(start_x, start_y);
+    end_node = &m_Model.FindClosestNode(end_x, end_y);
 }
 
 
@@ -20,7 +21,7 @@ RoutePlanner::RoutePlanner(RouteModel &model, float start_x, float start_y, floa
 // - Node objects have a distance method to determine the distance to another node.
 
 float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
-
+    return node->distance(*end_node);
 }
 
 
@@ -32,8 +33,16 @@ float RoutePlanner::CalculateHValue(RouteModel::Node const *node) {
 // - For each node in current_node.neighbors, add the neighbor to open_list and set the node's visited attribute to true.
 
 void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
-
-
+    current_node->FindNeighbors();
+    for (RouteModel::Node* neighbor_node : current_node->neighbors) {
+        if (!neighbor_node->visited) {
+            neighbor_node->parent = current_node;
+            neighbor_node->g_value = current_node->g_value + current_node->distance(*neighbor_node);
+            neighbor_node->h_value = CalculateHValue(neighbor_node);
+            open_list.push_back(neighbor_node);
+            neighbor_node->visited = true;
+        }
+    }
 }
 
 
@@ -44,8 +53,13 @@ void RoutePlanner::AddNeighbors(RouteModel::Node *current_node) {
 // - Remove that node from the open_list.
 // - Return the pointer.
 
-RouteModel::Node *RoutePlanner::NextNode() {
-
+RouteModel::Node* RoutePlanner::NextNode() {
+    std::sort(open_list.begin(), open_list.end(), [](const RouteModel::Node* a, const RouteModel::Node* b) {
+        return (a->g_value + a->h_value) > (b->g_value + b->h_value);
+    });
+    RouteModel::Node* lowest_sum_node = open_list.back();
+    open_list.pop_back();
+    return lowest_sum_node;
 }
 
 
@@ -61,8 +75,24 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
     // Create path_found vector
     distance = 0.0f;
     std::vector<RouteModel::Node> path_found;
+    std::cout << "[Debug]: building path... .\n";
 
     // TODO: Implement your solution here.
+    while (current_node->parent != start_node){
+        path_found.push_back(*current_node);
+        distance += current_node->distance(*current_node->parent);
+        std::cout << "[Debug]: distance +=" << distance << std::endl;
+        current_node = current_node->parent;
+    }
+
+    // now current_node is the second node from the start node.
+    path_found.push_back(*current_node);
+    distance += current_node->distance(*start_node); // add distance from second node to start node to total distance
+    
+    // add start node to path found
+    path_found.push_back(*start_node);
+
+    std::reverse(path_found.begin(), path_found.end());
 
     distance *= m_Model.MetricScale(); // Multiply the distance by the scale of the map to get meters.
     return path_found;
@@ -77,8 +107,26 @@ std::vector<RouteModel::Node> RoutePlanner::ConstructFinalPath(RouteModel::Node 
 // - Store the final path in the m_Model.path attribute before the method exits. This path will then be displayed on the map tile.
 
 void RoutePlanner::AStarSearch() {
+    std::cout << "[Debug]: Start A-Star search.\n";
     RouteModel::Node *current_node = nullptr;
 
     // TODO: Implement your solution here.
-
+    
+    //@LiMe: pushback the start node. Otherwise the open_list will be empty.
+    start_node->visited = true;
+    open_list.push_back(start_node);
+    if (open_list.empty()) {
+        std::cerr << "[ERROR]: open_list is empty!" << std::endl;
+    }
+       
+    while (!open_list.empty()) {
+        current_node = NextNode();
+        if (current_node == end_node) {
+            std::cout << "[Debug]: Hit the final node.\n";
+            m_Model.path = ConstructFinalPath(end_node);
+            std::cout << "[Debug]: Build path done.\n";
+            return;
+        }
+        AddNeighbors(current_node);
+    }
 }
