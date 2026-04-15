@@ -112,7 +112,9 @@ TEST_F(RoutePlannerTest, TestConstructFinalPath) {
     std::vector<RouteModel::Node> path = route_planner.ConstructFinalPath(end_node);
 
     // Test the path.
+    std::cout << "3. path.size(): " << path.size() << std::endl;
     EXPECT_EQ(path.size(), 3);
+    
     EXPECT_FLOAT_EQ(start_node->x, path.front().x);
     EXPECT_FLOAT_EQ(start_node->y, path.front().y);
     EXPECT_FLOAT_EQ(end_node->x, path.back().x);
@@ -123,6 +125,7 @@ TEST_F(RoutePlannerTest, TestConstructFinalPath) {
 // Test the AStarSearch method.
 TEST_F(RoutePlannerTest, TestAStarSearch) {
     route_planner.AStarSearch();
+    std::cout << "4. path.size(): " << model.path.size() << std::endl;
     EXPECT_EQ(model.path.size(), 33);
     RouteModel::Node path_start = model.path.front();
     RouteModel::Node path_end = model.path.back();
