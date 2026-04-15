@@ -1,5 +1,7 @@
 # OpenStreetMap Route Planner
 
+To understand A* algorithmus -> https://youtu.be/icZj67PTFhc?si=--uwpCzuBjmixB2N
+
 This repo contains the starter code for the Route Planning project.
 
 When the project is completed and successfully ran, a route-overlayed map will be saved to ```build/map_routed.png```
@@ -13,7 +15,7 @@ _Start: 10, 10 - End: 90, 90_
 As you make changes to the source code, the build will **not** automatically update. To create updated executables, follow Steps 2 - 4. 
 
 ## Getting Started
-This document contains instructions for how to run the project on your local machine. If you're using the Udacity-provided Workspace, these steps have already been completed.
+This document contains instructions for how to run the project on your local machine. If you're using the Udacity-provided Workspace, step 1 has already been completed. Start now with step 2.
 
 ### 1. Install Dependencies
 > [!IMPORTANT]
